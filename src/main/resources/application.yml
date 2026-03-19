@@ -1,0 +1,43 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gliner-pii-detector
+
+gliner:
+  model:
+    path: ./src/main/resources/model.onnx
+    tokenizer-path: ./src/main/resources/tokenizer.json
+    max-length: 384
+    threshold: 0.5
+  entities:
+    financial:
+      - CREDIT_CARD
+      - BANK_ACCOUNT
+      - ROUTING_NUMBER
+      - SWIFT_CODE
+      - IBAN
+      - TAX_ID
+      - SSN
+      - ACCOUNT_NUMBER
+    trading:
+      - TICKER_SYMBOL
+      - CUSIP
+      - ISIN
+      - PORTFOLIO_ID
+      - TRADE_ID
+      - BROKER_ID
+    personal:
+      - EMAIL
+      - PHONE_NUMBER
+      - NAME
+      - ADDRESS
+      - DATE_OF_BIRTH
+      - PASSPORT_NUMBER
+      - DRIVER_LICENSE
+
+logging:
+  level:
+    com.piidetector: INFO
+    org.springframework: WARN

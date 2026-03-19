@@ -1,0 +1,90 @@
+### Health Check
+GET http://localhost:8080/api/v1/pii/health
+
+###
+
+### Get All Entity Types
+GET http://localhost:8080/api/v1/entity-types
+
+###
+
+### Get Financial Entity Types
+GET http://localhost:8080/api/v1/entity-types/financial
+
+###
+
+### Get Trading Entity Types
+GET http://localhost:8080/api/v1/entity-types/trading
+
+###
+
+### Detect PII - Financial Example
+POST http://localhost:8080/api/v1/pii/detect
+Content-Type: application/json
+
+{
+  "text": "Please transfer $5000 from account 123456789 to routing number 021000021. My credit card 4532-1234-5678-9010 can be used for backup.",
+  "entityTypes": ["BANK_ACCOUNT", "ROUTING_NUMBER", "CREDIT_CARD"],
+  "threshold": 0.5
+}
+
+###
+
+### Detect PII - Trading Example
+POST http://localhost:8080/api/v1/pii/detect
+Content-Type: application/json
+
+{
+  "text": "Buy 100 shares of AAPL (ISIN: US0378331005) for portfolio P12345. Trade ID: TRD-2024-001",
+  "entityTypes": ["TICKER_SYMBOL", "ISIN", "PORTFOLIO_ID", "TRADE_ID"]
+}
+
+###
+
+### Detect PII - Personal Information
+POST http://localhost:8080/api/v1/pii/detect
+Content-Type: application/json
+
+{
+  "text": "Contact John Doe at john.doe@example.com or call 555-123-4567. SSN: 123-45-6789",
+  "entityTypes": ["EMAIL", "PHONE_NUMBER", "SSN", "NAME"]
+}
+
+###
+
+### Detect PII - All Entity Types (Auto-detect)
+POST http://localhost:8080/api/v1/pii/detect
+Content-Type: application/json
+
+{
+  "text": "My email is alice@company.com, phone is 555-987-6543, and my SWIFT code is CHASUS33XXX"
+}
+
+###
+
+### Batch Detection - Multiple Texts
+POST http://localhost:8080/api/v1/pii/detect/batch
+Content-Type: application/json
+
+{
+  "texts": [
+    "Account number: 987654321, routing: 021000021",
+    "Email: bob@trading.com, Portfolio: P67890",
+    "Credit card: 5555-4444-3333-2222, ISIN: US0378331005"
+  ],
+  "entityTypes": ["BANK_ACCOUNT", "ROUTING_NUMBER", "EMAIL", "PORTFOLIO_ID", "CREDIT_CARD", "ISIN"],
+  "threshold": 0.5
+}
+
+###
+
+### Detect PII - Complex Financial Document
+POST http://localhost:8080/api/v1/pii/detect
+Content-Type: application/json
+
+{
+  "text": "CONFIDENTIAL TRADING REPORT\n\nClient: John Smith (SSN: 123-45-6789)\nEmail: j.smith@investment.com\nPhone: +1-555-123-4567\n\nAccount Details:\n- Account Number: 1234567890\n- Routing Number: 021000021\n- SWIFT Code: CHASUS33XXX\n\nRecent Transactions:\n1. Buy 500 AAPL (CUSIP: 037833100) - Trade ID: TRD-2024-001\n2. Sell 200 MSFT (ISIN: US5949181045) - Trade ID: TRD-2024-002\n\nPayment Method: Credit Card ending in 9010\nFull Card: 4532-1234-5678-9010\n\nPortfolio ID: P-12345-PREMIUM",
+  "threshold": 0.4
+}
+
+###

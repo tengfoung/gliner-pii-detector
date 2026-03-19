@@ -1,0 +1,247 @@
+{
+  "info": {
+    "name": "GLiNER PII Detector API",
+    "description": "API collection for detecting PII (Personally Identifiable Information) in text using GLiNER model. Supports financial, trading, and personal entity types.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "gliner-pii-detector"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/pii/health",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "v1", "pii", "health"]
+        },
+        "description": "Check if the PII Detection Service is running"
+      },
+      "response": []
+    },
+    {
+      "name": "Get All Entity Types",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/entity-types",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "v1", "entity-types"]
+        },
+        "description": "Retrieve all supported entity types categorized by financial, trading, and personal"
+      },
+      "response": []
+    },
+    {
+      "name": "Get Financial Entity Types",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/entity-types/financial",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "v1", "entity-types", "financial"]
+        },
+        "description": "Get financial entity types (CREDIT_CARD, BANK_ACCOUNT, ROUTING_NUMBER, etc.)"
+      },
+      "response": []
+    },
+    {
+      "name": "Get Trading Entity Types",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/entity-types/trading",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "v1", "entity-types", "trading"]
+        },
+        "description": "Get trading entity types (TICKER_SYMBOL, CUSIP, ISIN, etc.)"
+      },
+      "response": []
+    },
+    {
+      "name": "Get Personal Entity Types",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/entity-types/personal",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "v1", "entity-types", "personal"]
+        },
+        "description": "Get personal entity types (EMAIL, PHONE_NUMBER, NAME, etc.)"
+      },
+      "response": []
+    },
+    {
+      "name": "Detect PII - Financial Example",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"text\": \"Please transfer $5000 from account 123456789 to routing number 021000021. My credit card 4532-1234-5678-9010 can be used for backup.\",\n  \"entityTypes\": [\"BANK_ACCOUNT\", \"ROUTING_NUMBER\", \"CREDIT_CARD\"],\n  \"threshold\": 0.5\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/pii/detect",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "v1", "pii", "detect"]
+        },
+        "description": "Detect financial PII entities in text"
+      },
+      "response": []
+    },
+    {
+      "name": "Detect PII - Trading Example",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"text\": \"Buy 100 shares of AAPL (ISIN: US0378331005) for portfolio P12345. Trade ID: TRD-2024-001\",\n  \"entityTypes\": [\"TICKER_SYMBOL\", \"ISIN\", \"PORTFOLIO_ID\", \"TRADE_ID\"]\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/pii/detect",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "v1", "pii", "detect"]
+        },
+        "description": "Detect trading-related entities in text"
+      },
+      "response": []
+    },
+    {
+      "name": "Detect PII - Personal Information",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"text\": \"Contact John Doe at john.doe@example.com or call 555-123-4567. SSN: 123-45-6789\",\n  \"entityTypes\": [\"EMAIL\", \"PHONE_NUMBER\", \"SSN\", \"NAME\"]\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/pii/detect",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "v1", "pii", "detect"]
+        },
+        "description": "Detect personal information entities in text"
+      },
+      "response": []
+    },
+    {
+      "name": "Detect PII - Auto-detect All Types",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"text\": \"My email is alice@company.com, phone is 555-987-6543, and my SWIFT code is CHASUS33XXX\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/pii/detect",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "v1", "pii", "detect"]
+        },
+        "description": "Detect all entity types automatically (no entityTypes specified)"
+      },
+      "response": []
+    },
+    {
+      "name": "Batch Detection - Multiple Texts",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"texts\": [\n    \"Account number: 987654321, routing: 021000021\",\n    \"Email: bob@trading.com, Portfolio: P67890\",\n    \"Credit card: 5555-4444-3333-2222, ISIN: US0378331005\"\n  ],\n  \"entityTypes\": [\"BANK_ACCOUNT\", \"ROUTING_NUMBER\", \"EMAIL\", \"PORTFOLIO_ID\", \"CREDIT_CARD\", \"ISIN\"],\n  \"threshold\": 0.5\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/pii/detect/batch",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "v1", "pii", "detect", "batch"]
+        },
+        "description": "Process multiple texts in a single batch request"
+      },
+      "response": []
+    },
+    {
+      "name": "Detect PII - Complex Financial Document",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"text\": \"CONFIDENTIAL TRADING REPORT\\n\\nClient: John Smith (SSN: 123-45-6789)\\nEmail: j.smith@investment.com\\nPhone: +1-555-123-4567\\n\\nAccount Details:\\n- Account Number: 1234567890\\n- Routing Number: 021000021\\n- SWIFT Code: CHASUS33XXX\\n\\nRecent Transactions:\\n1. Buy 500 AAPL (CUSIP: 037833100) - Trade ID: TRD-2024-001\\n2. Sell 200 MSFT (ISIN: US5949181045) - Trade ID: TRD-2024-002\\n\\nPayment Method: Credit Card ending in 9010\\nFull Card: 4532-1234-5678-9010\\n\\nPortfolio ID: P-12345-PREMIUM\",\n  \"threshold\": 0.4\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/pii/detect",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "v1", "pii", "detect"]
+        },
+        "description": "Detect all entity types in a complex multi-line document with mixed PII"
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ]
+}
