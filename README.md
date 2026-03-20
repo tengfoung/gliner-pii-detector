@@ -5,6 +5,8 @@ A Spring Boot application for detecting Personally Identifiable Information (PII
 ## Features
 
 - **PII Detection**: Detect various types of PII including financial, trading, and personal information
+- **PII Redaction**: Mask detected PII with multiple strategies (FULL, PARTIAL, HASH, TOKEN)
+- **PII Remasking**: Restore original values from redacted text using secure tokens
 - **RESTful API**: JSON-based API endpoints for single and batch text processing
 - **ONNX Runtime**: Efficient inference using ONNX Runtime with the GLiNER model
 - **Pattern Matching**: Hybrid approach combining ML model with regex patterns for high accuracy
@@ -203,6 +205,84 @@ The application will start on `http://localhost:8080`
 }
 ```
 
+### 8. Redact PII
+
+**Endpoint**: `POST /api/v1/redaction/redact`
+
+**Request Body**:
+```json
+{
+  "text": "My credit card is 4532-1234-5678-9010 and SSN is 123-45-6789",
+  "entityTypes": ["CREDIT_CARD", "SSN"],
+  "threshold": 0.5,
+  "maskCharacter": "*",
+  "maskingStrategy": "PARTIAL"
+}
+```
+
+**Masking Strategies**:
+- `FULL`: Completely masks the value (e.g., `*******************`)
+- `PARTIAL`: Shows first and last few characters (e.g., `4532****9010`)
+- `HASH`: Replaces with hash value (e.g., `[HASH:A1B2C3D4]`)
+- `TOKEN`: Replaces with entity type (e.g., `[CREDIT_CARD]`)
+
+**Response**:
+```json
+{
+  "originalText": "My credit card is 4532-1234-5678-9010 and SSN is 123-45-6789",
+  "redactedText": "My credit card is 4532****9010 and SSN is 123-****6789",
+  "redactedEntities": [
+    {
+      "originalValue": "4532-1234-5678-9010",
+      "maskedValue": "4532****9010",
+      "type": "CREDIT_CARD",
+      "startIndex": 18,
+      "endIndex": 30,
+      "confidence": 0.95,
+      "entityToken": "RDT-xxx-E18"
+    }
+  ],
+  "entityCount": 2,
+  "redactionToken": "RDT-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+  "processingTimeMs": 52
+}
+```
+
+### 9. Remask PII (Restore Original)
+
+**Endpoint**: `POST /api/v1/redaction/remask`
+
+**Request Body**:
+```json
+{
+  "redactedText": "My credit card is 4532****9010 and SSN is 123-****6789",
+  "redactionToken": "RDT-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+}
+```
+
+**Response**:
+```json
+{
+  "redactedText": "My credit card is 4532****9010 and SSN is 123-****6789",
+  "restoredText": "My credit card is 4532-1234-5678-9010 and SSN is 123-45-6789",
+  "entitiesRestored": 2,
+  "success": true,
+  "message": "Successfully restored original text"
+}
+```
+
+### 10. Get Masking Strategies
+
+**Endpoint**: `GET /api/v1/redaction/strategies`
+
+**Response**:
+```json
+{
+  "strategies": ["FULL", "PARTIAL", "HASH", "TOKEN"],
+  "description": "FULL: Completely masks the value...\nPARTIAL: Shows first and last few characters...\nHASH: Replaces with a hash value...\nTOKEN: Replaces with entity type token..."
+}
+```
+
 ## Configuration
 
 Edit `src/main/resources/application.yml` to customize:
@@ -247,6 +327,32 @@ curl -X POST http://localhost:8080/api/v1/pii/detect/batch \
 ### Get Entity Types
 ```bash
 curl http://localhost:8080/api/v1/entity-types
+```
+
+### Redact PII
+```bash
+curl -X POST http://localhost:8080/api/v1/redaction/redact \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "My credit card is 4532-1234-5678-9010 and SSN is 123-45-6789",
+    "entityTypes": ["CREDIT_CARD", "SSN"],
+    "maskingStrategy": "PARTIAL"
+  }'
+```
+
+### Remask PII
+```bash
+curl -X POST http://localhost:8080/api/v1/redaction/remask \
+  -H "Content-Type: application/json" \
+  -d '{
+    "redactedText": "My credit card is 4532****9010 and SSN is 123-****6789",
+    "redactionToken": "RDT-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+  }'
+```
+
+### Get Masking Strategies
+```bash
+curl http://localhost:8080/api/v1/redaction/strategies
 ```
 
 ## Architecture

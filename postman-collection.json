@@ -235,6 +235,147 @@
         "description": "Detect all entity types in a complex multi-line document with mixed PII"
       },
       "response": []
+    },
+    {
+      "name": "Get Masking Strategies",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/redaction/strategies",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "v1", "redaction", "strategies"]
+        },
+        "description": "Get available masking strategies for PII redaction"
+      },
+      "response": []
+    },
+    {
+      "name": "Redact PII - FULL Strategy",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"text\": \"Please transfer $5000 from account 123456789 to routing number 021000021. My credit card 4532-1234-5678-9010 can be used for backup. Contact me at john.doe@example.com or 555-123-4567.\",\n  \"entityTypes\": [\"BANK_ACCOUNT\", \"ROUTING_NUMBER\", \"CREDIT_CARD\", \"EMAIL\", \"PHONE_NUMBER\"],\n  \"threshold\": 0.5,\n  \"maskCharacter\": \"*\",\n  \"maskingStrategy\": \"FULL\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/redaction/redact",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "v1", "redaction", "redact"]
+        },
+        "description": "Redact PII with FULL masking (completely masks values with asterisks)"
+      },
+      "response": []
+    },
+    {
+      "name": "Redact PII - PARTIAL Strategy",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"text\": \"Credit card: 4532-1234-5678-9010, Account: 987654321, Email: alice@company.com\",\n  \"maskingStrategy\": \"PARTIAL\",\n  \"maskCharacter\": \"*\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/redaction/redact",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "v1", "redaction", "redact"]
+        },
+        "description": "Redact PII with PARTIAL masking (shows first and last few characters)"
+      },
+      "response": []
+    },
+    {
+      "name": "Redact PII - HASH Strategy",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"text\": \"SSN: 123-45-6789, Account: 1234567890, SWIFT: CHASUS33XXX\",\n  \"entityTypes\": [\"SSN\", \"BANK_ACCOUNT\", \"SWIFT_CODE\"],\n  \"maskingStrategy\": \"HASH\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/redaction/redact",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "v1", "redaction", "redact"]
+        },
+        "description": "Redact PII with HASH strategy (replaces with hash values)"
+      },
+      "response": []
+    },
+    {
+      "name": "Redact PII - TOKEN Strategy",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"text\": \"Buy 100 shares of AAPL (ISIN: US0378331005) for portfolio P12345. Credit card 4532-1234-5678-9010 on file.\",\n  \"maskingStrategy\": \"TOKEN\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/redaction/redact",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "v1", "redaction", "redact"]
+        },
+        "description": "Redact PII with TOKEN strategy (replaces with entity type tokens like [CREDIT_CARD])"
+      },
+      "response": []
+    },
+    {
+      "name": "Remask PII - Restore Original",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"redactedText\": \"Please transfer $5000 from account ********* to routing number *********. My credit card ******************* can be used for backup.\",\n  \"redactionToken\": \"RDT-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/redaction/remask",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "v1", "redaction", "remask"]
+        },
+        "description": "Restore original PII values using the redaction token from a previous redact operation. NOTE: Replace the redactionToken value with the actual token from your redact response."
+      },
+      "response": []
     }
   ],
   "variable": [

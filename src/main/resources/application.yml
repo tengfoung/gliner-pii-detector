@@ -7,8 +7,8 @@ spring:
 
 gliner:
   model:
-    path: ./src/main/resources/model.onnx
-    tokenizer-path: ./src/main/resources/tokenizer.json
+    path: src/main/resources/model.onnx
+    tokenizer-path: src/main/resources/tokenizer.json
     max-length: 384
     threshold: 0.5
   entities:
