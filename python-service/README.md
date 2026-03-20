@@ -10,19 +10,33 @@ This service provides PII detection using the GLiNER model from HuggingFace.
 
 ## Setup
 
-### Download Model (One-time Setup)
+### Option A: Fully Offline Setup (Recommended for Production)
 
-Before running the service, download the GLiNER model locally:
+For complete offline capability (no internet required after initial setup):
+
+```bash
+# 1. Download all Python packages (~2GB, one-time)
+./setup_offline.sh
+
+# 2. Download GLiNER model (~500MB, one-time)
+source venv/bin/activate
+python download_model.py
+```
+
+After this, the service runs **100% offline** with no internet dependency.
+
+### Option B: Online Setup (Development)
 
 ```bash
 # Activate virtual environment
 source venv/bin/activate
 
+# Install dependencies from PyPI
+pip install -r requirements.txt
+
 # Download model (required only once, ~500MB)
 python download_model.py
 ```
-
-This downloads the model to `./models/gliner_multi_pii-v1/` for offline use.
 
 ## Running the Service
 

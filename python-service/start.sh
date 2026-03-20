@@ -12,8 +12,14 @@ fi
 echo "Activating virtual environment..."
 source venv/bin/activate
 
-echo "Installing dependencies..."
-pip install -r requirements.txt
+# Install dependencies (offline-first approach)
+if [ -d "offline_packages" ]; then
+    echo "Installing dependencies from offline cache..."
+    pip install --no-index --find-links=offline_packages -r requirements.txt > /dev/null 2>&1
+else
+    echo "Installing dependencies from PyPI (online)..."
+    pip install -r requirements.txt > /dev/null 2>&1
+fi
 
 # Check if model is downloaded
 if [ ! -d "models/gliner_multi_pii-v1" ]; then
