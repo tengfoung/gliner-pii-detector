@@ -39,6 +39,30 @@ build/
 *.log
 logs/
 
+# Virtual environment
+venv/
+env/
+.venv/
 
-### model ###
-*.onnx
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Model files (large binary files)
+models/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

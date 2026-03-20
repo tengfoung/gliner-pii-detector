@@ -1,15 +1,22 @@
 # GLiNER PII Multi-Detector
 
-A Spring Boot application for detecting Personally Identifiable Information (PII) in text, with a focus on financial and trading data, using the GLiNER ONNX model.
+A microservices-based application for detecting Personally Identifiable Information (PII) in text, with a focus on financial and trading data, using the GLiNER model from HuggingFace.
+
+## Architecture
+
+This application consists of two services:
+
+1. **Python FastAPI Service** (`python-service/`): Handles GLiNER model inference using the original PyTorch model from HuggingFace
+2. **Java Spring Boot Service**: Provides REST API endpoints, business logic, redaction/remasking functionality
 
 ## Features
 
-- **PII Detection**: Detect various types of PII including financial, trading, and personal information
+- **PII Detection**: Detect various types of PII including financial, trading, and personal information using GLiNER
 - **PII Redaction**: Mask detected PII with multiple strategies (FULL, PARTIAL, HASH, TOKEN)
 - **PII Remasking**: Restore original values from redacted text using secure tokens
 - **RESTful API**: JSON-based API endpoints for single and batch text processing
-- **ONNX Runtime**: Efficient inference using ONNX Runtime with the GLiNER model
-- **Pattern Matching**: Hybrid approach combining ML model with regex patterns for high accuracy
+- **Native GLiNER Model**: Uses the original PyTorch model from HuggingFace for accurate detection
+- **Microservices Architecture**: Scalable design with separate Python ML service and Java API service
 - **Configurable**: Customizable entity types and detection thresholds
 
 ## Supported Entity Types
@@ -43,13 +50,18 @@ A Spring Boot application for detecting Personally Identifiable Information (PII
 
 ## Prerequisites
 
+### For Docker Deployment (Recommended)
+- Docker and Docker Compose
+
+### For Local Development
 - Java 17 or higher
 - Maven 3.6+
-- GLiNER ONNX model files (already included):
-  - `model.onnx`
-  - `tokenizer.json`
+- Python 3.10+
+- pip
 
 ## Installation
+
+### Option 1: Docker Compose (Recommended)
 
 1. Clone the repository:
 ```bash
@@ -57,17 +69,40 @@ git clone <repository-url>
 cd gliner-spring-boot-java
 ```
 
-2. Build the project:
+2. Start both services with Docker Compose:
 ```bash
-mvn clean install
+docker-compose up
 ```
 
-3. Run the application:
+The Python service will download the GLiNER model from HuggingFace on first startup (~500MB).
+
+- Python FastAPI service: `http://localhost:5001`
+- Java Spring Boot API: `http://localhost:8080`
+
+### Option 2: Local Development
+
+1. **Start the Python service**:
 ```bash
+cd python-service
+./start.sh
+```
+
+The Python service will start on `http://localhost:5001` and automatically download the GLiNER model from HuggingFace.
+
+2. **Start the Java service** (in a new terminal):
+```bash
+mvn clean install
 mvn spring-boot:run
 ```
 
-The application will start on `http://localhost:8080`
+The Java service will start on `http://localhost:8080`
+
+## Model Information
+
+- **Model**: `urchade/gliner_multi_pii-v1`
+- **Source**: https://huggingface.co/urchade/gliner_multi_pii-v1
+- **Size**: ~500MB
+- **Auto-download**: Model is automatically downloaded from HuggingFace on first startup
 
 ## API Endpoints
 

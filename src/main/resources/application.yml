@@ -6,10 +6,10 @@ spring:
     name: gliner-pii-detector
 
 gliner:
+  python:
+    service:
+      url: http://localhost:5001
   model:
-    path: src/main/resources/model.onnx
-    tokenizer-path: src/main/resources/tokenizer.json
-    max-length: 384
     threshold: 0.5
   entities:
     financial:

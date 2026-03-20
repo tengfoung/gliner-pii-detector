@@ -17,9 +17,6 @@ public class GlinerConfig {
 
     @Data
     public static class Model {
-        private String path = "model.onnx";
-        private String tokenizerPath = "tokenizer.json";
-        private int maxLength = 384;
         private double threshold = 0.5;
     }
 }

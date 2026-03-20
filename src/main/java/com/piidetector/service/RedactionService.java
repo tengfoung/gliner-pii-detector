@@ -26,8 +26,7 @@ public class RedactionService {
 
         PiiDetectionResponse detectionResponse = piiDetectionService.detectPii(
                 request.getText(),
-                request.getEntityTypes(),
-                request.getThreshold()
+                request.getEntityTypes()
         );
 
         String maskChar = request.getMaskCharacter() != null ? request.getMaskCharacter() : "*";

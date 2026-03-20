@@ -30,8 +30,7 @@ public class PiiDetectionController {
         
         PiiDetectionResponse response = piiDetectionService.detectPii(
                 request.getText(),
-                request.getEntityTypes(),
-                request.getThreshold()
+                request.getEntityTypes()
         );
         
         log.info("Detected {} PII entities in {}ms", 
@@ -52,8 +51,7 @@ public class PiiDetectionController {
         for (String text : request.getTexts()) {
             PiiDetectionResponse response = piiDetectionService.detectPii(
                     text,
-                    request.getEntityTypes(),
-                    request.getThreshold()
+                    request.getEntityTypes()
             );
             results.add(response);
             totalEntities += response.getEntityCount();

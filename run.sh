@@ -18,23 +18,6 @@ echo ""
 echo "Checking Maven version..."
 mvn -version | head -n 1
 
-# Check model files
-echo ""
-echo "Checking model files..."
-if [ -f "./src/main/resources/model.onnx" ]; then
-    echo "✓ model.onnx found"
-else
-    echo "✗ model.onnx NOT found"
-    exit 1
-fi
-
-if [ -f "./src/main/resources/tokenizer.json" ]; then
-    echo "✓ tokenizer.json found"
-else
-    echo "✗ tokenizer.json NOT found"
-    exit 1
-fi
-
 echo ""
 echo "========================================="
 echo "Building and starting application..."

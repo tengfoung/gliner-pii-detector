@@ -3,11 +3,12 @@ package com.piidetector.service;
 import com.piidetector.config.GlinerConfig;
 import com.piidetector.dto.PiiDetectionResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.*;
 
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -15,34 +16,29 @@ import java.util.stream.Collectors;
 public class PiiDetectionService {
 
     private final GlinerConfig config;
-    private final TokenizerService tokenizerService;
-    private final OnnxModelService onnxModelService;
+    private final RestTemplate restTemplate;
+    
+    @Value("${gliner.python.service.url:http://localhost:5001}")
+    private String pythonServiceUrl;
 
-    public PiiDetectionService(GlinerConfig config, 
-                               TokenizerService tokenizerService,
-                               OnnxModelService onnxModelService) {
+    public PiiDetectionService(GlinerConfig config) {
         this.config = config;
-        this.tokenizerService = tokenizerService;
-        this.onnxModelService = onnxModelService;
+        this.restTemplate = new RestTemplate();
     }
 
-    public PiiDetectionResponse detectPii(String text, List<String> entityTypes, Double threshold) {
+    public PiiDetectionResponse detectPii(String text, List<String> entityTypes) {
         long startTime = System.currentTimeMillis();
         
         if (entityTypes == null || entityTypes.isEmpty()) {
             entityTypes = getAllEntityTypes();
         }
         
-        double confidenceThreshold = threshold != null ? threshold : config.getModel().getThreshold();
-        
         List<PiiDetectionResponse.DetectedEntity> detectedEntities = new ArrayList<>();
         
-        detectedEntities.addAll(detectWithPatterns(text, entityTypes, confidenceThreshold));
-        
         try {
-            detectedEntities.addAll(detectWithModel(text, entityTypes, confidenceThreshold));
+            detectedEntities = detectWithModel(text, entityTypes);
         } catch (Exception e) {
-            log.error("Error during model inference, falling back to pattern matching only", e);
+            log.error("Error during model inference", e);
         }
         
         detectedEntities = mergeDuplicates(detectedEntities);
@@ -57,56 +53,49 @@ public class PiiDetectionService {
                 .build();
     }
 
-    private List<PiiDetectionResponse.DetectedEntity> detectWithPatterns(String text, 
-                                                                         List<String> entityTypes, 
-                                                                         double threshold) {
+    private List<PiiDetectionResponse.DetectedEntity> detectWithModel(String text,
+                                                                       List<String> entityTypes) throws Exception {
         List<PiiDetectionResponse.DetectedEntity> entities = new ArrayList<>();
         
-        Map<String, Pattern> patterns = getPatterns();
-        
-        for (String entityType : entityTypes) {
-            Pattern pattern = patterns.get(entityType);
-            if (pattern != null) {
-                Matcher matcher = pattern.matcher(text);
-                while (matcher.find()) {
-                    entities.add(PiiDetectionResponse.DetectedEntity.builder()
-                            .text(matcher.group())
-                            .type(entityType)
-                            .startIndex(matcher.start())
-                            .endIndex(matcher.end())
-                            .confidence(0.95)
-                            .build());
+        try {
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("text", text);
+            requestBody.put("entity_types", entityTypes);
+            requestBody.put("threshold", config.getModel().getThreshold());
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
+            
+            String url = pythonServiceUrl + "/detect";
+            log.info("Calling Python service at: {}", url);
+            
+            ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
+            
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                Map<String, Object> responseBody = response.getBody();
+                List<Map<String, Object>> detectedEntities = (List<Map<String, Object>>) responseBody.get("entities");
+                
+                if (detectedEntities != null) {
+                    for (Map<String, Object> entity : detectedEntities) {
+                        entities.add(PiiDetectionResponse.DetectedEntity.builder()
+                                .text((String) entity.get("text"))
+                                .type((String) entity.get("type"))
+                                .startIndex(((Number) entity.get("start_index")).intValue())
+                                .endIndex(((Number) entity.get("end_index")).intValue())
+                                .confidence(((Number) entity.get("confidence")).doubleValue())
+                                .build());
+                    }
                 }
+                
+                log.info("Python service returned {} entities", entities.size());
             }
+        } catch (Exception e) {
+            log.error("Error calling Python service: {}", e.getMessage());
+            throw e;
         }
         
         return entities;
-    }
-
-    private List<PiiDetectionResponse.DetectedEntity> detectWithModel(String text, 
-                                                                      List<String> entityTypes, 
-                                                                      double threshold) {
-        List<PiiDetectionResponse.DetectedEntity> entities = new ArrayList<>();
-        
-        return entities;
-    }
-
-    private Map<String, Pattern> getPatterns() {
-        Map<String, Pattern> patterns = new HashMap<>();
-        
-        patterns.put("CREDIT_CARD", Pattern.compile("\\b(?:\\d{4}[- ]?){3}\\d{4}\\b"));
-        patterns.put("SSN", Pattern.compile("\\b\\d{3}-\\d{2}-\\d{4}\\b"));
-        patterns.put("EMAIL", Pattern.compile("\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b"));
-        patterns.put("PHONE_NUMBER", Pattern.compile("\\b(?:\\+?1[-.]?)?\\(?\\d{3}\\)?[-.]?\\d{3}[-.]?\\d{4}\\b"));
-        patterns.put("BANK_ACCOUNT", Pattern.compile("\\b\\d{8,17}\\b"));
-        patterns.put("ROUTING_NUMBER", Pattern.compile("\\b\\d{9}\\b"));
-        patterns.put("SWIFT_CODE", Pattern.compile("\\b[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?\\b"));
-        patterns.put("IBAN", Pattern.compile("\\b[A-Z]{2}\\d{2}[A-Z0-9]{1,30}\\b"));
-        patterns.put("TICKER_SYMBOL", Pattern.compile("\\b[A-Z]{1,5}\\b"));
-        patterns.put("CUSIP", Pattern.compile("\\b[0-9]{3}[0-9A-Z]{5}[0-9]\\b"));
-        patterns.put("ISIN", Pattern.compile("\\b[A-Z]{2}[A-Z0-9]{9}\\d\\b"));
-        
-        return patterns;
     }
 
     private List<String> getAllEntityTypes() {
